@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love You</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        /* حاوية النبض الأساسية */
+        .heart-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: beat 0.8s infinite alternate cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* تصميم قلب الـ CSS */
+        .heart-shape {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 50, 0.85);
+            transform: rotate(-45deg);
+            box-shadow: 0 0 40px rgba(255, 0, 50, 0.6);
+        }
+
+        .heart-shape::before,
+        .heart-shape::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 50, 0.85);
+            border-radius: 50%;
+        }
+
+        .heart-shape::before {
+            top: -50px;
+            left: 0;
+        }
+
+        .heart-shape::after {
+            left: 50px;
+            top: 0;
+        }
+
+        /* النص الرئيسي في المنتصف */
+        .main-text {
+            position: relative;
+            z-index: 10;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+
+        /* أنيميشن النبض (Heartbeat) */
+        @keyframes beat {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        /* رسالة التفاعل لتشغيل الصوت */
+        .click-notice {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: opacity 0.5s;
+            z-index: 20;
+        }
+
+        /* إخفاء مشغل يوتيوب تماماً من الشاشة */
+        #youtube-audio {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- حاوية مشغل يوتيوب المخفية -->
+    <div id="youtube-audio"></div>
+
+    <div class="heart-container">
+        <div class="heart-shape"></div>
+        <div class="main-text">Love you.</div>
+    </div>
+
+    <div class="click-notice" id="notice">اضغط في أي مكان لتشغيل الأغنية 🎵</div>
+
+    <!-- استدعاء مكتبة يوتيوب الرسمية -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        let player;
+        const startTime = 104; // دقيقة و 44 ثانية بالثواني
+        const endTime = 125;   // دقيقتين و 5 ثوانٍ بالثواني
+
+        // تهيئة مشغل يوتيوب المخفي فور تحميل المكتبة
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-audio', {
+                height: '0',
+                width: '0',
+                videoId: 'hbe3CQamF8k',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'disablekb': 1,
+                    'fs': 0,
+                    'rel': 0,
+                    'modestbranding': 1
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // مراقبة وقت تشغيل الفيديو لضمان التكرار (Loop) بين الفترتين بدقة
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                setInterval(() => {
+                    let currentTime = player.getCurrentTime();
+                    if (currentTime >= endTime || currentTime < startTime) {
+                        player.seekTo(startTime);
+                    }
+                }, 500);
+            }
+        }
+
+        // تشغيل الصوت عند ضغط المستخدم في أي مكان على الصفحة
+        document.body.addEventListener('click', () => {
+            if (player && typeof player.playVideo === 'function') {
+                player.seekTo(startTime);
+                player.playVideo();
+                
+                // إخفاء رسالة التنبيه
+                const notice = document.getElementById('notice');
+                notice.style.opacity = '0';
+            }
+        });
+    </script>
+
+</body>
+</html>
